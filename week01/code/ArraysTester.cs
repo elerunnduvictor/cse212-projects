@@ -1,8 +1,11 @@
-public static class ArraysTester {
+
+public static class ArraysTester
+{
     /// <summary>
     /// Entry point for the tests
     /// </summary>
-    public static void Run() {
+    public static void Run()
+    {
         // Sample Test Cases (may not be comprehensive)
         Console.WriteLine("\n=========== PROBLEM 1 TESTS ===========");
         double[] multiples = MultiplesOf(7, 5);
@@ -26,6 +29,7 @@ public static class ArraysTester {
         RotateListRight(numbers, 9);
         Console.WriteLine($"<List>{{{string.Join(',', numbers)}}}"); // <List>{1, 2, 3, 4, 5, 6, 7, 8, 9}
     }
+
     /// <summary>
     /// This function will produce a list of size 'length' starting with 'number' followed by multiples of 'number'.  For 
     /// example, MultiplesOf(7, 5) will result in: {7, 14, 21, 28, 35}.  Assume that length is a positive
@@ -34,28 +38,43 @@ public static class ArraysTester {
     /// <returns>array of doubles that are the multiples of the supplied number</returns>
     private static double[] MultiplesOf(double number, int length)
     {
-        // TODO Problem 1 Start
-        // Remember: Using comments in your program, write down your process for solving this problem
-        // step by step before you write the code. The plan should be clear enough that it could
-        // be implemented by another person.
+        // Initialize an array to store the multiples
+        double[] result = new double[length];
 
-        return new double[0]; // replace this return statement with your own
+        // Loop through the length and calculate each multiple
+        for (int i = 0; i < length; i++)
+        {
+            // Calculate the multiple and store it in the array
+            result[i] = number * (i + 1);
+        }
+
+        // Return the array of multiples
+        return result;
     }
-    
+
     /// <summary>
-    /// Rotate the 'data' to the right by the 'amount'.  For example, if the data is 
-    /// <c>&lt;List&gt;{1, 2, 3, 4, 5, 6, 7, 8, 9}</c> and an amount is 3 then the list returned should be 
-    /// <c>&lt;List&gt;{7, 8, 9, 1, 2, 3, 4, 5, 6}</c>.  The value of amount will be in the range of <c>1</c> and 
-    /// <c>data.Count</c>.
-    /// <br /><br />
-    /// Because a list is dynamic, this function will modify the existing <c>data</c> list rather than returning a new list.
+    /// Rotate the 'data' to the right by the 'amount'.
     /// </summary>
+    /// <param name="data">The list to rotate.</param>
+    /// <param name="amount">The number of positions to rotate by.</param>
     private static void RotateListRight(List<int> data, int amount)
     {
-        // TODO Problem 2 Start
-        // Remember: Using comments in your program, write down your process for solving this problem
-        // step by step before you write the code. The plan should be clear enough that it could
-        // be implemented by another person.
+        // Validate inputs
+        if (amount < 1 || amount > data.Count)
+        {
+            throw new ArgumentOutOfRangeException(nameof(amount), "Amount must be between 1 and data.Count.");
+        }
 
+        // Perform rotation
+        for (int i = 0; i < amount; i++)
+        {
+            int lastElementIndex = data.Count - 1;
+            int lastElement = data[lastElementIndex];
+            data.RemoveAt(lastElementIndex);
+            data.Insert(0, lastElement);
+        }
     }
 }
+
+
+
