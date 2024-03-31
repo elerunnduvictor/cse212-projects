@@ -1,7 +1,14 @@
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Net.Http;
 using System.Text.Json;
+using System.Threading.Tasks;
 
-public static class SetsAndMapsTester {
-    public static void Run() {
+public static class SetsAndMapsTester
+{
+    public static void Run()
+    {
         // Problem 1: Find Pairs with Sets
         Console.WriteLine("\n=========== Finding Pairs TESTS ===========");
         DisplayPairs(new[] { "am", "at", "ma", "if", "fi" });
@@ -29,12 +36,11 @@ public static class SetsAndMapsTester {
         // Problem 2: Degree Summary
         // Sample Test Cases (may not be comprehensive) 
         Console.WriteLine("\n=========== Census TESTS ===========");
-        Console.WriteLine(string.Join(", ", SummarizeDegrees("census.txt")));
-        // Results may be in a different order:
-        // <Dictionary>{[Bachelors, 5355], [HS-grad, 10501], [11th, 1175],
-        // [Masters, 1723], [9th, 514], [Some-college, 7291], [Assoc-acdm, 1067],
-        // [Assoc-voc, 1382], [7th-8th, 646], [Doctorate, 413], [Prof-school, 576],
-        // [5th-6th, 333], [10th, 933], [1st-4th, 168], [Preschool, 51], [12th, 433]}
+        var degreeSummary = SummarizeDegrees("census.txt");
+        foreach (var kvp in degreeSummary)
+        {
+            Console.WriteLine($"[{kvp.Key}, {kvp.Value}]");
+        }
 
         // Problem 3: Anagrams
         // Sample Test Cases (may not be comprehensive) 
@@ -52,7 +58,7 @@ public static class SetsAndMapsTester {
 
         // Problem 4: Maze
         Console.WriteLine("\n=========== Maze TESTS ===========");
-        Dictionary<ValueTuple<int, int>, bool[]> map = SetupMazeMap();
+        Dictionary<(int, int), bool[]> map = SetupMazeMap();
         var maze = new Maze(map);
         maze.ShowStatus(); // Should be at (1,1)
         maze.MoveUp(); // Error
@@ -78,94 +84,195 @@ public static class SetsAndMapsTester {
         // Problem 5: Earthquake
         // Sample Test Cases (may not be comprehensive) 
         Console.WriteLine("\n=========== Earthquake TESTS ===========");
-        EarthquakeDailySummary();
-
-        // Sample output from the function.  Number of earthquakes, places, and magnitudes will vary.
-        // 1km NE of Pahala, Hawaii - Mag 2.36
-        // 58km NW of Kandrian, Papua New Guinea - Mag 4.5
-        // 16km NNW of Truckee, California - Mag 0.7
-        // 9km S of Idyllwild, CA - Mag 0.25
-        // 14km SW of Searles Valley, CA - Mag 0.36
-        // 4km SW of Volcano, Hawaii - Mag 1.99
+        EarthquakeDailySummary().Wait();
     }
 
-    /// <summary>
-    /// The words parameter contains a list of two character 
-    /// words (lower case, no duplicates). Using sets, find an O(n) 
-    /// solution for displaying all symmetric pairs of words.  
-    ///
-    /// For example, if <c>words</c> was: <c>[am, at, ma, if, fi]</c>, we would display:
-    /// <code>
-    /// am &amp; ma
-    /// if &amp; fi
-    /// </code>
-    /// The order of the display above does not matter. <c>at</c> would not 
-    /// be displayed because <c>ta</c> is not in the list of words.
-    ///
-    /// As a special case, if the letters are the same (example: 'aa') then
-    /// it would not match anything else (remember the assumption above
-    /// that there were no duplicates) and therefore should not be displayed.
-    /// </summary>
-    /// <param name="words">An array of 2-character words (lowercase, no duplicates)</param>
-    private static void DisplayPairs(string[] words) {
-        // To display the pair correctly use something like:
-        // Console.WriteLine($"{word} & {pair}");
-        // Each pair of words should displayed on its own line.
+    private static void DisplayPairs(string[] words)
+    {
+        var seenWords = new HashSet<string>();
+
+        foreach (var word in words)
+        {
+            var reverse = ReverseString(word);
+            if (seenWords.Contains(reverse))
+            {
+                Console.WriteLine($"{word} & {reverse}");
+            }
+            else
+            {
+                seenWords.Add(word);
+            }
+        }
     }
 
-    /// <summary>
-    /// Read a census file and summarize the degrees (education)
-    /// earned by those contained in the file.  The summary
-    /// should be stored in a dictionary where the key is the
-    /// degree earned and the value is the number of people that 
-    /// have earned that degree.  The degree information is in
-    /// the 4th column of the file.  There is no header row in the
-    /// file.
-    /// </summary>
-    /// <param name="filename">The name of the file to read</param>
-    /// <returns>fixed array of divisors</returns>
-    /// #############
-    /// # Problem 2 #
-    /// #############
-    private static Dictionary<string, int> SummarizeDegrees(string filename) {
+    private static string ReverseString(string str)
+    {
+        char[] charArray = str.ToCharArray();
+        Array.Reverse(charArray);
+        return new string(charArray);
+    }
+
+    private static Dictionary<string, int> SummarizeDegrees(string filename)
+    {
         var degrees = new Dictionary<string, int>();
-        foreach (var line in File.ReadLines(filename)) {
-            var fields = line.Split(",");
-            // Todo Problem 2 - ADD YOUR CODE HERE
+
+        foreach (var line in File.ReadLines(filename))
+        {
+            var fields = line.Split(',');
+            if (fields.Length >= 4)
+            {
+                var degree = fields[3].Trim();
+                if (!string.IsNullOrEmpty(degree))
+                {
+                    if (degrees.ContainsKey(degree))
+                    {
+                        degrees[degree]++;
+                    }
+                    else
+                    {
+                        degrees[degree] = 1;
+                    }
+                }
+            }
         }
 
         return degrees;
     }
 
-    /// <summary>
-    /// Determine if 'word1' and 'word2' are anagrams.  An anagram
-    /// is when the same letters in a word are re-organized into a 
-    /// new word.  A dictionary is used to solve the problem.
-    /// 
-    /// Examples:
-    /// is_anagram("CAT","ACT") would return true
-    /// is_anagram("DOG","GOOD") would return false because GOOD has 2 O's
-    /// 
-    /// Important Note: When determining if two words are anagrams, you
-    /// should ignore any spaces.  You should also ignore cases.  For 
-    /// example, 'Ab' and 'Ba' should be considered anagrams
-    /// 
-    /// Reminder: You can access a letter by index in a string by 
-    /// using the [] notation.
-    /// </summary>
-    /// #############
-    /// # Problem 3 #
-    /// #############
-    private static bool IsAnagram(string word1, string word2) {
-        // Todo Problem 3 - ADD YOUR CODE HERE
-        return false;
+    private static bool IsAnagram(string word1, string word2)
+    {
+        // Remove spaces and convert to lowercase
+        word1 = word1.Replace(" ", "").ToLower();
+        word2 = word2.Replace(" ", "").ToLower();
+
+        // Create dictionaries to store character frequencies
+        var freq1 = new Dictionary<char, int>();
+        var freq2 = new Dictionary<char, int>();
+
+        // Update frequencies for word1
+        foreach (char c in word1)
+        {
+            if (freq1.ContainsKey(c))
+            {
+                freq1[c]++;
+            }
+            else
+            {
+                freq1[c] = 1;
+            }
+        }
+
+        // Update frequencies for word2
+        foreach (char c in word2)
+        {
+            if (freq2.ContainsKey(c))
+            {
+                freq2[c]++;
+            }
+            else
+            {
+                freq2[c] = 1;
+            }
+        }
+
+        // Compare the dictionaries
+        return AreDictionariesEqual(freq1, freq2);
     }
 
-    /// <summary>
-    /// Sets up the maze dictionary for problem 4
-    /// </summary>
-    private static Dictionary<ValueTuple<int, int>, bool[]> SetupMazeMap() {
-        Dictionary<ValueTuple<int, int>, bool[]> map = new() {
+    // Helper function to check if two dictionaries are equal
+    private static bool AreDictionariesEqual(Dictionary<char, int> dict1, Dictionary<char, int> dict2)
+    {
+        if (dict1.Count != dict2.Count)
+        {
+            return false;
+        }
+
+        foreach (var kvp in dict1)
+        {
+            if (!dict2.ContainsKey(kvp.Key) || dict2[kvp.Key] != kvp.Value)
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    public class Maze
+    {
+        private readonly Dictionary<(int, int), bool[]> _map;
+        private int _currentX;
+        private int _currentY;
+
+        public Maze(Dictionary<(int, int), bool[]> map)
+        {
+            _map = map;
+            _currentX = 1; // Initial position
+            _currentY = 1;
+        }
+
+        public void MoveLeft()
+        {
+            if (_currentX > 1 && _map[(_currentX, _currentY)][0])
+            {
+                _currentX--;
+                Console.WriteLine($"Moved left to ({_currentX},{_currentY})");
+            }
+            else
+            {
+                Console.WriteLine("Cannot move left. Hit a wall or out of bounds.");
+            }
+        }
+
+        public void MoveRight()
+        {
+            if (_currentX < 6 && _map[(_currentX, _currentY)][1])
+            {
+                _currentX++;
+                Console.WriteLine($"Moved right to ({_currentX},{_currentY})");
+            }
+            else
+            {
+                Console.WriteLine("Cannot move right. Hit a wall or out of bounds.");
+            }
+        }
+
+        public void MoveUp()
+        {
+            if (_currentY > 1 && _map[(_currentX, _currentY)][2])
+            {
+                _currentY--;
+                Console.WriteLine($"Moved up to ({_currentX},{_currentY})");
+            }
+            else
+            {
+                Console.WriteLine("Cannot move up. Hit a wall or out of bounds.");
+            }
+        }
+
+        public void MoveDown()
+        {
+            if (_currentY < 6 && _map[(_currentX, _currentY)][3])
+            {
+                _currentY++;
+                Console.WriteLine($"Moved down to ({_currentX},{_currentY})");
+            }
+            else
+            {
+                Console.WriteLine("Cannot move down. Hit a wall or out of bounds.");
+            }
+        }
+
+        public void ShowStatus()
+        {
+            Console.WriteLine($"Current position: ({_currentX},{_currentY})");
+        }
+    }
+
+    private static Dictionary<(int, int), bool[]> SetupMazeMap()
+    {
+        Dictionary<(int, int), bool[]> map = new()
+        {
             { (1, 1), new[] { false, true, false, true } },
             { (1, 2), new[] { false, true, true, false } },
             { (1, 3), new[] { false, false, false, false } },
@@ -206,34 +313,49 @@ public static class SetsAndMapsTester {
         return map;
     }
 
-    /// <summary>
-    /// This function will read JSON (Javascript Object Notation) data from the 
-    /// United States Geological Service (USGS) consisting of earthquake data.
-    /// The data will include all earthquakes in the current day.
-    /// 
-    /// JSON data is organized into a dictionary. After reading the data using
-    /// the built-in HTTP client library, this function will print out a list of all
-    /// earthquake locations ('place' attribute) and magnitudes ('mag' attribute).
-    /// Additional information about the format of the JSON data can be found 
-    /// at this website:  
-    /// 
-    /// https://earthquake.usgs.gov/earthquakes/feed/v1.0/geojson.php
-    /// 
-    /// </summary>
-    private static void EarthquakeDailySummary() {
+    private static async Task EarthquakeDailySummary()
+    {
         const string uri = "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_day.geojson";
+
         using var client = new HttpClient();
-        using var getRequestMessage = new HttpRequestMessage(HttpMethod.Get, uri);
-        using var jsonStream = client.Send(getRequestMessage).Content.ReadAsStream();
-        using var reader = new StreamReader(jsonStream);
-        var json = reader.ReadToEnd();
-        var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+        using var response = await client.GetAsync(uri);
 
-        var featureCollection = JsonSerializer.Deserialize<FeatureCollection>(json, options);
+        if (response.IsSuccessStatusCode)
+        {
+            var json = await response.Content.ReadAsStringAsync();
+            var featureCollection = JsonSerializer.Deserialize<FeatureCollection>(json);
 
-        // TODO:
-        // 1. Add code in FeatureCollection.cs to describe the JSON using classes and properties 
-        // on those classes so that the call to Deserialize above works properly.
-        // 2. Add code below to print out each place a earthquake has happened today and its magitude.
+            if (featureCollection?.Features != null)
+            {
+                foreach (var feature in featureCollection.Features)
+                {
+                    Console.WriteLine($"{feature.Properties.Place} - Mag {feature.Properties.Mag}");
+                }
+            }
+            else
+            {
+                Console.WriteLine("No earthquake data found.");
+            }
+        }
+        else
+        {
+            Console.WriteLine($"Failed to fetch earthquake data. Status code: {response.StatusCode}");
+        }
     }
+}
+
+public class FeatureCollection
+{
+    public Feature[] Features { get; set; }
+}
+
+public class Feature
+{
+    public Properties Properties { get; set; }
+}
+
+public class Properties
+{
+    public string Place { get; set; }
+    public double Mag { get; set; }
 }
