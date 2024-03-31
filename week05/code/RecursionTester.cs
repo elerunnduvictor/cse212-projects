@@ -331,66 +331,17 @@ public static class RecursionTester {
     /// Use recursion to Print all paths that start at (0,0) and end at the
     /// 'end' square.
     /// </summary>
-    public static void SolveMaze(Maze maze, int x = 0, int y = 0, List<(int, int)>? currPath = null) {
+    public static void SolveMaze(Maze maze, int x = 0, int y = 0, List<ValueTuple<int, int>>? currPath = null) {
         // If this is the first time running the function, then we need
         // to initialize the currPath list.
-        currPath ??= new List<(int, int)>();
+        if (currPath == null)
+            currPath = new List<ValueTuple<int, int>>();
 
-        // Mark the current position as visited
-        currPath.Add((x, y));
+        // currPath.Add((1,2)); // Use this syntax to add to the current path
 
-        // Check if we have reached the destination
-        if (x == maze.DestinationX && y == maze.DestinationY) {
-            // Print the path
-            Console.WriteLine(currPath.AsString());
-            return;
-        }
+        // TODO Start Problem 5
+        // ADD CODE HERE
 
-        // Explore all possible directions (up, down, left, right)
-        ExploreDirection(maze, x - 1, y, currPath); // Up
-        ExploreDirection(maze, x + 1, y, currPath); // Down
-        ExploreDirection(maze, x, y - 1, currPath); // Left
-        ExploreDirection(maze, x, y + 1, currPath); // Right
-
-        // Unmark the current position
-        currPath.RemoveAt(currPath.Count - 1);
-    }
-
-    private static void ExploreDirection(Maze maze, int x, int y, List<(int, int)> currPath) {
-        // Check if the new position is valid and not already visited
-        if (x >= 0 && x < maze.Width &&
-            y >= 0 && y < maze.Height &&
-            maze.Grid[x, y] != Maze.Wall &&
-            !currPath.Contains((x, y))) {
-            // Recursively explore the new position
-            SolveMaze(maze, x, y, currPath);
-        }
-    }
-
-    public static void Main(string[] args) {
-        // Example usage
-        Maze maze = new Maze(5, 5); // Create a maze of size 5x5
-        maze.Grid[1, 0] = Maze.Wall; // Add a wall at position (1,0)
-        maze.Grid[1, 1] = Maze.Wall; // Add a wall at position (1,1)
-        maze.Grid[1, 2] = Maze.Wall; // Add a wall at position (1,2)
-        maze.Grid[3, 3] = Maze.Wall; // Add a wall at position (3,3)
-        SolveMaze(maze); // Solve the maze
-    }
-}
-
-public class Maze {
-    public const int Wall = 1;
-    public int[,] Grid { get; }
-    public int Width { get; }
-    public int Height { get; }
-    public int DestinationX { get; }
-    public int DestinationY { get; }
-
-    public Maze(int width, int height) {
-        Width = width;
-        Height = height;
-        Grid = new int[width, height];
-        DestinationX = width - 1;
-        DestinationY = height - 1;
+        // Console.WriteLine(currPath.AsString()); // Use this to print out your path when you find the solution
     }
 }
