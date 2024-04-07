@@ -2,6 +2,117 @@ public static class TreesTester {
     /// <summary>
     /// Entry point for the Prove 9 tests
     /// </summary>
+    public class Node {
+    public int Data;
+    public Node Left;
+    public Node Right;
+
+    public Node(int data) {
+        Data = data;
+        Left = null;
+        Right = null;
+    }
+
+    // Updated Insert function to allow only unique values
+    public void Insert(int value) {
+        if (value < Data) {
+            if (Left == null) {
+                Left = new Node(value);
+            }
+            else {
+                Left.Insert(value);
+            }
+        }
+        else if (value > Data) {
+            if (Right == null) {
+                Right = new Node(value);
+            }
+            else {
+                Right.Insert(value);
+            }
+        }
+        // Else, value is equal, do nothing to ensure uniqueness
+    }
+
+    // Other methods and properties...
+}
+
+public class BinarySearchTree {
+    public Node Root;
+
+    public BinarySearchTree() {
+        Root = null;
+    }
+
+    public void Insert(int value) {
+        if (Root == null) {
+            Root = new Node(value);
+        }
+        else {
+            Root.Insert(value);
+        }
+    }
+
+    // Other methods and properties...
+
+    public override string ToString() {
+        return string.Join(", ", InOrder(Root));
+    }
+
+    private static string InOrder(Node node) {
+        if (node == null) {
+            return "";
+        }
+        return InOrder(node.Left) + (node.Data + ", ") + InOrder(node.Right);
+    }
+
+    public bool Contains(int value) {
+        return Contains(Root, value);
+    }
+
+    private static bool Contains(Node node, int value) {
+        if (node == null) {
+            return false;
+        }
+        if (value == node.Data) {
+            return true;
+        }
+        if (value < node.Data) {
+            return Contains(node.Left, value);
+        }
+        return Contains(node.Right, value);
+    }
+
+    public IEnumerable<int> Reverse() {
+        return Reverse(Root);
+    }
+
+    private static IEnumerable<int> Reverse(Node node) {
+        if (node == null) {
+            yield break;
+        }
+        foreach (var item in Reverse(node.Right)) {
+            yield return item;
+        }
+        yield return node.Data;
+        foreach (var item in Reverse(node.Left)) {
+            yield return item;
+        }
+    }
+
+    public int GetHeight() {
+        return GetHeight(Root);
+    }
+
+    private static int GetHeight(Node node) {
+        if (node == null) {
+            return 0;
+        }
+        int leftHeight = GetHeight(node.Left);
+        int rightHeight = GetHeight(node.Right);
+        return Math.Max(leftHeight, rightHeight) + 1;
+    }
+}
     public static void Run() {
         // Sample Test Cases (may not be comprehensive)
         Console.WriteLine("\n=========== PROBLEM 1 TESTS ===========");
@@ -96,7 +207,23 @@ public static class TreesTester {
     /// <param name="first">the first index in the sortedNumbers to insert</param>
     /// <param name="last">the last index in the sortedNumbers to insert</param>
     /// <param name="bst">the BinarySearchTree in which to insert the values</param>
+   
+public static class BinaryTreeHelper {
+    // Function to insert the middle element of the given range into the tree
     private static void InsertMiddle(int[] sortedNumbers, int first, int last, BinarySearchTree bst) {
-        // TODO Start Problem 5
+        if (first <= last) {
+            int mid = (first + last) / 2;
+            bst.Insert(sortedNumbers[mid]);
+            InsertMiddle(sortedNumbers, first, mid - 1, bst); // insert middle element of left sub-list
+            InsertMiddle(sortedNumbers, mid + 1, last, bst); // insert middle element of right sub-list
+        }
     }
+
+    // Function to create a balanced tree from a sorted list of values
+    public static BinarySearchTree CreateTreeFromSortedList(int[] sortedArray) {
+        BinarySearchTree tree = new BinarySearchTree();
+        InsertMiddle(sortedArray, 0, sortedArray.Length - 1, tree);
+        return tree;
+    }
+}
 }
